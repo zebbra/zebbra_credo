@@ -6,3 +6,6 @@
 erl_crash.dump
 *.ez
 zebbra_credo-*.tar
+
+# Local planning docs (superpowers)
+/docs/superpowers/
