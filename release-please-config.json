@@ -4,13 +4,7 @@
     ".": {
       "release-type": "elixir",
       "package-name": "zebbra_credo",
-      "bump-minor-pre-major": true,
-      "extra-files": [
-        {
-          "type": "generic",
-          "path": "README.md"
-        }
-      ]
+      "bump-minor-pre-major": true
     }
   }
 }

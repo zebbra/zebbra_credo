@@ -7,7 +7,7 @@ zebbra's Credo checks for Elixir apps built on Ash and Phoenix. The checks keep 
 ```elixir
 def deps do
   [
-    {:zebbra_credo, "~> 0.1", only: [:dev, :test], runtime: false} # x-release-please-version
+    {:zebbra_credo, "~> 0.1", only: [:dev, :test], runtime: false}
   ]
 end
 ```
