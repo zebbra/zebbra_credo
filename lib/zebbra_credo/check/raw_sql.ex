@@ -98,7 +98,8 @@ defmodule ZebbraCredo.Check.RawSql do
 
     for line <- Enum.reverse(lines) do
       format_issue(issue_meta,
-        message: "A table named in a fragment bypasses Ash and its policies: use an Ash expression.",
+        message:
+          "A table named in a fragment bypasses Ash and its policies: use an Ash expression, or add the file to the check's `allowed:` list.",
         trigger: "fragment",
         line_no: line
       )

@@ -102,6 +102,18 @@ defmodule ZebbraCredo.Check.RawSqlTest do
     end)
   end
 
+  test "fragment message names the allowed list" do
+    ~S'''
+    defmodule MyApp.Accounts.X do
+      def a, do: expr(fragment("(SELECT count(*) FROM documents)"))
+    end
+    '''
+    |> issues("lib/my_app/accounts/x.ex")
+    |> assert_issue(fn issue ->
+      assert issue.message =~ "add the file to the check's `allowed:` list"
+    end)
+  end
+
   test "repo derives from app" do
     "defmodule Acme.Accounts.X do\n  def a, do: Acme.Repo.query!(\"select 1\")\nend\n"
     |> issues("lib/acme/accounts/x.ex", app: Acme)
