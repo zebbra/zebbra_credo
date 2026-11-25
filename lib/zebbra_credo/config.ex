@@ -1,8 +1,6 @@
 defmodule ZebbraCredo.Config do
-  @moduledoc """
-  Turns the plugin params into the checks to enable and merges them into the
-  checks a project's `.credo.exs` enables.
-  """
+  # Turns the plugin params into checks and merges them into the project's enabled checks.
+  @moduledoc false
 
   alias ZebbraCredo.Check
   alias ZebbraCredo.Presets.ForbiddenCalls

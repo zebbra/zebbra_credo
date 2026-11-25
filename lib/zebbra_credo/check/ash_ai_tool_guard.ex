@@ -120,9 +120,8 @@ defmodule ZebbraCredo.Check.AshAiToolGuard do
 
   defp tools_off?(options), do: Keyword.keyword?(options) and Keyword.get(options, :tools) == false
 
-  # Keyword pairs carry no line of their own: the enclosing call's line is
-  # the nearest one, so the walk keeps it in the accumulator. A function's
-  # head is skipped: `def prompt(model, opts)` calls nothing.
+  # Keyword pairs have no line, so the walk carries the enclosing call's line.
+  # A function head is skipped: `def prompt(model, opts)` calls nothing.
   defp option_issues(ast, loop?) do
     {_ast, {_line, issues}} =
       Macro.prewalk(ast, {1, []}, fn node, {line, issues} ->

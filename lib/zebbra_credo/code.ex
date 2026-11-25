@@ -1,8 +1,6 @@
 defmodule ZebbraCredo.Code do
-  @moduledoc """
-  Helpers of the project's Credo checks: the module references of a source
-  file with its aliases resolved, and file globs.
-  """
+  # Helpers of the checks: module references with aliases resolved, and file globs.
+  @moduledoc false
 
   @typespec_attributes [:spec, :type, :typep, :opaque, :callback, :macrocallback]
 
