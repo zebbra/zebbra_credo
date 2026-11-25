@@ -60,7 +60,7 @@ defmodule ZebbraCredo.Presets.ForbiddenCalls do
       [
         module: Phoenix.PubSub,
         functions: :all,
-        allowed: [Path.join(app.lib, "pub_sub.ex")],
+        allowed: [Path.join(app.lib, "pub_sub.ex"), Path.join(app.lib, "application.ex")],
         message: "use the domain's subscribe_*/broadcast_* functions (#{inspect(app.module)}.PubSub)"
       ],
       [module: Module.concat(app.web, Endpoint), functions: [:subscribe], only: [web_glob(app)], message: subscribe],

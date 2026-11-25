@@ -44,7 +44,7 @@ defmodule ZebbraCredo.Presets.ForbiddenCallsTest do
 
     assert door[:module] == Phoenix.PubSub
     assert door[:functions] == :all
-    assert door[:allowed] == ["lib/my_app/pub_sub.ex"]
+    assert door[:allowed] == ["lib/my_app/pub_sub.ex", "lib/my_app/application.ex"]
     assert door[:message] == "use the domain's subscribe_*/broadcast_* functions (MyApp.PubSub)"
 
     assert endpoint[:module] == MyAppWeb.Endpoint

@@ -149,7 +149,7 @@ The preset keys:
 |---|---|
 | `:token_resource` | `AshAuthentication.TokenResource` stays out of the web. |
 | `:oban_run_trigger` | No `AshOban.run_trigger`: use `change run_oban_trigger` in the action. |
-| `:pubsub_door` | `Phoenix.PubSub` only in `lib/my_app/pub_sub.ex`. The web calls neither it, nor `MyAppWeb.Endpoint.subscribe`, nor `MyApp.PubSub`: it uses the domain's `subscribe_*(scope)`. |
+| `:pubsub_door` | `Phoenix.PubSub` only in `lib/my_app/pub_sub.ex` and `lib/my_app/application.ex` (its child spec). The web calls neither it, nor `MyAppWeb.Endpoint.subscribe`, nor `MyApp.PubSub`: it uses the domain's `subscribe_*(scope)`. |
 | `:logger` | `Logger` at info and above (including `:log` and `:bare_log`) only in log subscribers, `lib/my_app/telemetry/**`, the web and `lib/mix/**`. |
 | `:clock` | `Date.utc_today`, `DateTime.now`, `DateTime.now!`, `DateTime.utc_now`, `NaiveDateTime.local_now`, `NaiveDateTime.utc_now`, `Time.utc_now`, `System.system_time` and `System.os_time` only in `lib/my_app/local_time.ex`. |
 | `:http_door` | `Req`, `Finch` and `Mint.HTTP` only in `lib/my_app/http.ex` and `lib/my_app/http/**`. |
