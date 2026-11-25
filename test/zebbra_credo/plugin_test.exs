@@ -41,6 +41,38 @@ defmodule ZebbraCredo.PluginTest do
   end
 
   @tag :tmp_dir
+  test "plugin checks lib/ but not test/", %{tmp_dir: dir} do
+    source = fn module ->
+      """
+      defmodule #{module} do
+        @moduledoc false
+        def seed, do: Ash.Seed.seed!(MyApp.User, %{})
+        def stub, do: Req.Test.stub(MyApp.HTTP, fn conn -> conn end)
+        def now, do: DateTime.utc_now()
+      end
+      """
+    end
+
+    for {path, module} <- [{"lib/my_app/fake.ex", MyApp.Fake}, {"test/support/fake.ex", MyApp.TestFake}] do
+      File.mkdir_p!(Path.join(dir, Path.dirname(path)))
+      File.write!(Path.join(dir, path), source.(inspect(module)))
+    end
+
+    config = Path.join(dir, ".credo.exs")
+
+    File.write!(
+      config,
+      ~s(%{configs: [%{name: "default", plugins: [{ZebbraCredo, app: MyApp}], checks: %{enabled: []}}]})
+    )
+
+    issues = Jason.decode!(credo(["--strict", "--format", "json", "--config-file", config, dir]))["issues"]
+    files = issues |> Enum.map(&Path.relative_to(Path.expand(&1["filename"]), Path.expand(dir))) |> Enum.uniq()
+
+    assert files == ["lib/my_app/fake.ex"]
+    assert length(issues) == 3
+  end
+
+  @tag :tmp_dir
   test "a bad plugin config stops the run before any file is checked", %{tmp_dir: dir} do
     config = Path.join(dir, ".credo.exs")
     File.write!(config, ~s(%{configs: [%{name: "default", plugins: [{ZebbraCredo, app: MyApp, except: [:clok]}]}]}))

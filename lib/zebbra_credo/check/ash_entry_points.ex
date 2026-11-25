@@ -10,13 +10,17 @@ defmodule ZebbraCredo.Check.AshEntryPoints do
   use Credo.Check,
     base_priority: :high,
     category: :design,
+    param_defaults: [files: %{included: ["lib/"]}],
     explanations: [
       check: """
       A LiveView, worker or other domain that builds an `Ash.Query` or
       `Ash.Changeset`, or calls `Ash.read/2` and friends itself, bypasses the
       domain's public interface. Define an action with arguments and a code
       interface on the domain instead, and call that.
-      """
+      """,
+      params: [
+        files: "Files to check (Credo's `included`/`excluded` globs); defaults to `lib/`."
+      ]
     ]
 
   alias ZebbraCredo.Code

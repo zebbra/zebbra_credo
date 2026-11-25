@@ -13,7 +13,7 @@ defmodule ZebbraCredo.Check.ForbiddenCalls do
   use Credo.Check,
     base_priority: :high,
     category: :warning,
-    param_defaults: [app: nil, web: nil, except: [], rules: []],
+    param_defaults: [files: %{included: ["lib/"]}, app: nil, web: nil, except: [], rules: []],
     explanations: [
       check: """
       Some modules and functions belong to one place: the token resource and
@@ -23,6 +23,7 @@ defmodule ZebbraCredo.Check.ForbiddenCalls do
       module, the functions and the files allowed to use them.
       """,
       params: [
+        files: "Files to check (Credo's `included`/`excluded` globs); defaults to `lib/`.",
         app: "The app's root module; turns on the house rules. Without it only `rules:` apply.",
         web: "The app's web namespace when it is not `<app>Web`.",
         except: "Keys of the house rules to leave out, see `ZebbraCredo.Presets.ForbiddenCalls.keys/0`.",

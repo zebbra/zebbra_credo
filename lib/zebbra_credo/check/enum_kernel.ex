@@ -7,7 +7,7 @@ defmodule ZebbraCredo.Check.EnumKernel do
   use Credo.Check,
     base_priority: :high,
     category: :design,
-    param_defaults: [app: nil, kernel: nil, allowed: []],
+    param_defaults: [files: %{included: ["lib/"]}, app: nil, kernel: nil, allowed: []],
     explanations: [
       check: """
       Enums share one kernel module that wraps `Ash.Type.Enum` (labels,
@@ -16,6 +16,7 @@ defmodule ZebbraCredo.Check.EnumKernel do
       `Ash.Type.Enum`.
       """,
       params: [
+        files: "Files to check (Credo's `included`/`excluded` globs); defaults to `lib/`.",
         app: "The app's root module; the kernel is `<app>.Type.Enum` in `<app lib>/type/enum.ex`.",
         kernel: "The kernel's file path when it is not `<app lib>/type/enum.ex`.",
         allowed: "File globs that may `use Ash.Type.Enum` besides the kernel."

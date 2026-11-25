@@ -8,13 +8,14 @@ defmodule ZebbraCredo.Check.RawSql do
   use Credo.Check,
     base_priority: :high,
     category: :warning,
-    param_defaults: [app: nil, repo: nil, allowed: [], repo_functions: [:all_tenants]],
+    param_defaults: [files: %{included: ["lib/"]}, app: nil, repo: nil, allowed: [], repo_functions: [:all_tenants]],
     explanations: [
       check: """
       Use an Ash action or expression. Where Ash cannot express it, add the
       file to the check's `allowed:` list with a comment saying why.
       """,
       params: [
+        files: "Files to check (Credo's `included`/`excluded` globs); defaults to `lib/`.",
         app: "The app's root module; its repo defaults to `<app>.Repo`.",
         repo:
           "The repo; its functions besides transaction/rollback/in_transaction? and `repo_functions:` send queries.",
