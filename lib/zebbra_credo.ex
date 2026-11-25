@@ -13,7 +13,8 @@ defmodule ZebbraCredo do
     * `web:` - the web namespace, when it is not `<app>Web`.
     * `repo:` - the Ecto repo, when it is not `<app>.Repo`.
     * `except:` - `ZebbraCredo.Presets.ForbiddenCalls` keys whose rules to drop.
-    * `except_checks:` - checks to switch off.
+    * `except_checks:` - checks the plugin adds to switch off; a check the
+      project lists itself is switched off with `{check, false}`.
     * `checks:` - `{check, params}` tuples that add params to a check or turn on
       an opt-in check such as `ZebbraCredo.Check.AshAiToolGuard`.
 

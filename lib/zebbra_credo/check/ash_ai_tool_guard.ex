@@ -19,6 +19,19 @@ defmodule ZebbraCredo.Check.AshAiToolGuard do
   Credo sees one file, so it cannot read options built elsewhere: that is why
   the options must be a literal at the call, and why the `loop:` module
   sets them itself.
+
+  `loop:` is only named in the messages; it does not confine `AshAi.ToolLoop`
+  to that module. A `ZebbraCredo.Check.ForbiddenCalls` rule does:
+
+      {ZebbraCredo.Check.ForbiddenCalls,
+       rules: [
+         [
+           module: AshAi.ToolLoop,
+           functions: :all,
+           allowed: ["lib/my_app/ai/loop.ex"],
+           message: "run the tool loop through MyApp.AI.Loop"
+         ]
+       ]}
   """
   use Credo.Check,
     base_priority: :high,
@@ -28,11 +41,11 @@ defmodule ZebbraCredo.Check.AshAiToolGuard do
       check: """
       Every tool call passes the Tool Guard. The loop takes `tools: false`, and
       domain tools come from `build_tools_and_registry/1` with their names,
-      wrapped and passed as `extra_tools`. Only the `loop:` module runs
-      `AshAi.ToolLoop`, and it sets these options itself.
+      wrapped and passed as `extra_tools`. The `loop:` module sets these
+      options itself; a `ForbiddenCalls` rule keeps `AshAi.ToolLoop` in it.
       """,
       params: [
-        loop: "The module that runs `AshAi.ToolLoop` (required).",
+        loop: "The module that runs `AshAi.ToolLoop` (required); named in the messages.",
         rules_doc: "Path of the document that states these rules; named in the messages when set."
       ]
     ]
