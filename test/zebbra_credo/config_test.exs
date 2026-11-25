@@ -89,4 +89,50 @@ defmodule ZebbraCredo.ConfigTest do
   test "unknown except key raises" do
     assert_raise ArgumentError, ~r/:clok.*:clock/s, fn -> Config.house_checks(app: MyApp, except: [:clok]) end
   end
+
+  test "an OTP app name as app raises" do
+    assert_raise ArgumentError, ~r/`app:`.*module.*:my_app/s, fn -> Config.house_checks(app: :my_app) end
+  end
+
+  test "web and repo that are not modules raise" do
+    assert_raise ArgumentError, ~r/`web:`.*:my_app_web/s, fn -> Config.house_checks(app: MyApp, web: :my_app_web) end
+
+    assert_raise ArgumentError, ~r/`repo:`.*"MyApp.Repo"/s, fn ->
+      Config.house_checks(app: MyApp, repo: "MyApp.Repo")
+    end
+  end
+
+  test "except that is not a list raises" do
+    assert_raise ArgumentError, ~r/`except:`.*list.*:clock/s, fn -> Config.house_checks(app: MyApp, except: :clock) end
+  end
+
+  test "except_checks that is not a list raises" do
+    assert_raise ArgumentError, ~r/`except_checks:`.*list/s, fn ->
+      Config.house_checks(app: MyApp, except_checks: Check.EnumKernel)
+    end
+  end
+
+  test "checks that is not a list of {check, params} raises" do
+    assert_raise ArgumentError, ~r/`checks:`.*false/s, fn -> Config.house_checks(app: MyApp, checks: false) end
+
+    assert_raise ArgumentError, ~r/`checks:`/, fn ->
+      Config.house_checks(app: MyApp, checks: [{Check.RawSql, "lib/x.ex"}])
+    end
+  end
+
+  test "a check module that does not exist raises" do
+    assert_raise ArgumentError, ~r/`checks:`.*ZebbraCredo.Check.Typo.*not a Credo check/s, fn ->
+      Config.house_checks(app: MyApp, checks: [{Check.Typo, []}])
+    end
+
+    assert_raise ArgumentError, ~r/`except_checks:`.*ZebbraCredo.Check.Typo.*not a Credo check/s, fn ->
+      Config.house_checks(app: MyApp, except_checks: [Check.Typo])
+    end
+  end
+
+  test "a module that is not a Credo check raises" do
+    assert_raise ArgumentError, ~r/`checks:`.*Enum.*not a Credo check/s, fn ->
+      Config.house_checks(app: MyApp, checks: [{Enum, []}])
+    end
+  end
 end

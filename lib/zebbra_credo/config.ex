@@ -21,11 +21,13 @@ defmodule ZebbraCredo.Config do
   @doc """
   The default-enabled checks with their params derived from the plugin params,
   without `except_checks:`, plus the checks listed in `checks:`. Raises
-  `ArgumentError` on a missing `app:` or an unknown `except:` key.
+  `ArgumentError` on a missing `app:`, an unknown `except:` key or a param of
+  the wrong shape.
   """
   @spec house_checks(keyword()) :: [{module(), keyword()}]
   def house_checks(params) do
     app_params = app_params(params)
+    validate!(params)
     except = except(params)
     extra = Keyword.get(params, :checks, [])
     checks = Enum.uniq(@defaults ++ Keyword.keys(extra)) -- Keyword.get(params, :except_checks, [])
@@ -56,14 +58,52 @@ defmodule ZebbraCredo.Config do
   end
 
   defp app_params(params) do
-    case Keyword.get(params, :app) do
-      app when is_atom(app) and app not in [nil, true, false] ->
-        [app: app] ++ Keyword.take(params, [:web, :repo])
+    app = Keyword.get(params, :app)
 
-      other ->
-        raise ArgumentError, "the ZebbraCredo plugin needs `app:`, the app's root module, got: #{inspect(other)}"
-    end
+    unless module?(app),
+      do: invalid!(:app, "the app's root module, such as `MyApp` (not the OTP app name)", app)
+
+    [app: app] ++ Keyword.take(params, [:web, :repo])
   end
+
+  defp validate!(params) do
+    for {key, example} <- [web: "MyAppWeb", repo: "MyApp.Repo"],
+        Keyword.has_key?(params, key),
+        not module?(params[key]),
+        do: invalid!(key, "a module, such as `#{example}`", params[key])
+
+    except = Keyword.get(params, :except, [])
+    unless list_of_atoms?(except), do: invalid!(:except, "a list of preset keys", except)
+
+    except_checks = Keyword.get(params, :except_checks, [])
+    unless list_of_atoms?(except_checks), do: invalid!(:except_checks, "a list of check modules", except_checks)
+    Enum.each(except_checks, &check!(:except_checks, &1))
+
+    checks = Keyword.get(params, :checks, [])
+
+    unless is_list(checks) and Enum.all?(checks, &check_entry?/1),
+      do: invalid!(:checks, "a list of `{check, params}` tuples with keyword params", checks)
+
+    Enum.each(checks, fn {check, _own} -> check!(:checks, check) end)
+  end
+
+  defp check_entry?({check, own}) when is_atom(check), do: Keyword.keyword?(own)
+  defp check_entry?(_entry), do: false
+
+  defp check!(key, module) do
+    unless Code.ensure_loaded?(module) and function_exported?(module, :param_names, 0),
+      do: raise(ArgumentError, "ZebbraCredo `#{key}:` names #{inspect(module)}, which is not a Credo check")
+  end
+
+  defp module?(value), do: is_atom(value) and String.starts_with?(Atom.to_string(value), "Elixir.")
+
+  defp list_of_atoms?(value), do: is_list(value) and Enum.all?(value, &is_atom/1)
+
+  defp invalid!(:app, expected, value),
+    do: raise(ArgumentError, "the ZebbraCredo plugin needs `app:`, #{expected}, got: #{inspect(value)}")
+
+  defp invalid!(key, expected, value),
+    do: raise(ArgumentError, "ZebbraCredo `#{key}:` must be #{expected}, got: #{inspect(value)}")
 
   defp except(params) do
     except = Keyword.get(params, :except, [])
