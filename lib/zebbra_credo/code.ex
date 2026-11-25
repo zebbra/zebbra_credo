@@ -112,4 +112,16 @@ defmodule ZebbraCredo.Code do
     parts = Map.get(aliases, first, [first]) ++ rest
     if Enum.all?(parts, &is_atom/1), do: Module.concat(parts)
   end
+
+  @doc "Whether the comment lines right above `line_no` hold a `# system:` line."
+  @spec system_comment_above?(Credo.SourceFile.t(), pos_integer()) :: boolean()
+  def system_comment_above?(source_file, line_no) do
+    lines = source_file |> Credo.SourceFile.lines() |> Map.new()
+
+    (line_no - 1)
+    |> Stream.iterate(&(&1 - 1))
+    |> Stream.map(&String.trim_leading(Map.get(lines, &1, "")))
+    |> Enum.take_while(&String.starts_with?(&1, "#"))
+    |> Enum.any?(&String.starts_with?(&1, "# system:"))
+  end
 end
