@@ -73,6 +73,7 @@ defmodule ZebbraCredo.Check.NoAnonymousDslFunctionsTest do
   test "ignores qualified calls and other macros" do
     """
     defmodule MyApp.Orders.Order do
+      use Ash.Resource
       Ash.Changeset.change(fn -> :ok end)
       other fn -> :ok end
     end
@@ -82,8 +83,76 @@ defmodule ZebbraCredo.Check.NoAnonymousDslFunctionsTest do
   end
 
   test "respects macros param" do
-    "defmodule A do\n  other fn -> :ok end\nend\n"
+    "defmodule A do\n  use Ash.Resource\n  other fn -> :ok end\nend\n"
     |> issues(macros: [:other])
+    |> assert_issue()
+  end
+
+  test "ignores a capture placeholder named like a macro" do
+    """
+    defmodule MyApp.Orders.Order do
+      use Ash.Resource, domain: MyApp.Orders
+
+      def check(rows, opts), do: Enum.map(rows, &validate(&1, opts))
+    end
+    """
+    |> issues()
+    |> refute_issues()
+  end
+
+  test "ignores a local helper outside a resource" do
+    """
+    defmodule MyApp.Release do
+      def migrate, do: run(fn -> :ok end)
+      defp run(fun), do: fun.()
+    end
+    """
+    |> issues([], "lib/my_app/release.ex")
+    |> refute_issues()
+  end
+
+  test "flags prepare fn and validate fn inside a resource, aliases resolved" do
+    """
+    defmodule MyApp.Orders.Order do
+      alias Ash.Resource
+      use Resource, domain: MyApp.Orders
+
+      preparations do
+        prepare fn query, _ -> query end
+      end
+
+      validate fn changeset, _ -> :ok end
+    end
+    """
+    |> issues()
+    |> assert_issues(fn issues -> assert issues |> Enum.map(& &1.line_no) |> Enum.sort() == [6, 9] end)
+  end
+
+  test "flags change(fn ... end) with parens" do
+    """
+    defmodule MyApp.Orders.Order do
+      use Ash.Resource
+
+      changes do
+        change(fn changeset, _ -> changeset end)
+      end
+    end
+    """
+    |> issues()
+    |> assert_issue(fn issue -> assert issue.line_no == 5 end)
+  end
+
+  test "flags run &local/2 inside a resource" do
+    """
+    defmodule MyApp.Orders.Order do
+      use Ash.Resource
+
+      action :go do
+        run &go/2
+      end
+    end
+    """
+    |> issues()
     |> assert_issue()
   end
 end
