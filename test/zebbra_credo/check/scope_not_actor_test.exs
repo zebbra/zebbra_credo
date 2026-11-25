@@ -64,4 +64,44 @@ defmodule ZebbraCredo.Check.ScopeNotActorTest do
     |> check("lib/my_app_web/live/foo.ex", [])
     |> refute_issues()
   end
+
+  for {name, value} <- [variable: "sys", literal: ":system"] do
+    test "accepts a system comment above the call or the actor line of a multi-line call (#{name})" do
+      above_call = """
+      # system: no user here.
+      Orders.purge(
+        actor: #{unquote(value)}
+      )
+      """
+
+      above_pair = """
+      Orders.purge(
+        # system: no user here.
+        actor: #{unquote(value)}
+      )
+      """
+
+      above_call |> check("lib/my_app_web/foo.ex") |> refute_issues()
+      above_pair |> check("lib/my_app_web/foo.ex") |> refute_issues()
+    end
+
+    test "flags a multi-line call without a comment (#{name})" do
+      """
+      Orders.purge(
+        actor: #{unquote(value)}
+      )
+      """
+      |> check("lib/my_app_web/foo.ex")
+      |> assert_issue()
+    end
+  end
+
+  test "ignores actor in map and struct literals" do
+    """
+    x = %{actor: user}
+    y = %Event{actor: user}
+    """
+    |> check("lib/my_app_web/foo.ex")
+    |> refute_issues()
+  end
 end

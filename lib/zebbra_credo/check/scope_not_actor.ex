@@ -37,10 +37,12 @@ defmodule ZebbraCredo.Check.ScopeNotActor do
       lines = Code.line_map(source_file)
 
       source_file
-      |> SourceFile.ast()
-      |> actor_lines()
-      |> Enum.reject(&Code.system_comment_above?(lines, &1))
-      |> Enum.map(&issue_for(issue_meta, &1))
+      |> literal_ast()
+      |> actor_pairs()
+      |> Enum.reject(fn {call_line, pair_line} ->
+        Code.system_comment_above?(lines, call_line) or Code.system_comment_above?(lines, pair_line)
+      end)
+      |> Enum.map(fn {_call_line, pair_line} -> issue_for(issue_meta, pair_line) end)
     else
       []
     end
@@ -59,26 +61,40 @@ defmodule ZebbraCredo.Check.ScopeNotActor do
       Regex.match?(~r{(^|/)#{Regex.escape(web_lib)}/}, filename)
   end
 
-  defp actor_lines(ast) do
-    {_ast, lines} =
+  # Literals keep their line only when the parser wraps them in blocks.
+  defp literal_ast(source_file) do
+    case Elixir.Code.string_to_quoted(SourceFile.source(source_file),
+           literal_encoder: &{:ok, {:__block__, &2, [&1]}},
+           token_metadata: true
+         ) do
+      {:ok, ast} -> ast
+      _error -> nil
+    end
+  end
+
+  defp actor_pairs(ast) do
+    {_ast, pairs} =
       Macro.prewalk(ast, [], fn
-        {_call, meta, args} = node, acc when is_list(args) -> {node, pairs(args, meta[:line]) ++ acc}
-        node, acc -> {node, acc}
+        {call, meta, args} = node, acc when is_list(args) and call != :__block__ ->
+          {node, pairs(args, meta[:line]) ++ acc}
+
+        node, acc ->
+          {node, acc}
       end)
 
-    lines |> Enum.uniq() |> Enum.sort()
+    pairs |> Enum.uniq() |> Enum.sort_by(&elem(&1, 1))
   end
 
   defp pairs(args, call_line) do
-    for keyword <- args,
+    for keyword <- Enum.map(args, &unwrap/1),
         is_list(keyword),
-        {:actor, value} <- keyword,
-        value != nil,
-        do: line_of(value) || call_line
+        {{:__block__, meta, [:actor]}, value} <- keyword,
+        not match?({:__block__, _, [nil]}, value),
+        do: {call_line, meta[:line]}
   end
 
-  defp line_of({_, meta, _}) when is_list(meta), do: meta[:line]
-  defp line_of(_), do: nil
+  defp unwrap({:__block__, _, [list]}) when is_list(list), do: list
+  defp unwrap(other), do: other
 
   defp issue_for(issue_meta, line_no) do
     format_issue(issue_meta,
