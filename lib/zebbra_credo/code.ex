@@ -113,11 +113,19 @@ defmodule ZebbraCredo.Code do
     if Enum.all?(parts, &is_atom/1), do: Module.concat(parts)
   end
 
-  @doc "Whether the comment lines right above `line_no` hold a `# system:` line."
-  @spec system_comment_above?(Credo.SourceFile.t(), pos_integer()) :: boolean()
-  def system_comment_above?(source_file, line_no) do
-    lines = source_file |> Credo.SourceFile.lines() |> Map.new()
+  @doc "The file's lines as a `%{line_no => text}` map, for repeated `system_comment_above?/2` lookups."
+  @spec line_map(Credo.SourceFile.t()) :: %{pos_integer() => String.t()}
+  def line_map(source_file), do: source_file |> Credo.SourceFile.lines() |> Map.new()
 
+  @doc """
+  Whether the comment lines right above `line_no` hold a `# system:` line.
+  Takes a source file, or a `line_map/1` to look up many lines cheaply.
+  """
+  @spec system_comment_above?(Credo.SourceFile.t() | map(), pos_integer()) :: boolean()
+  def system_comment_above?(%Credo.SourceFile{} = source_file, line_no),
+    do: system_comment_above?(line_map(source_file), line_no)
+
+  def system_comment_above?(lines, line_no) when is_map(lines) do
     (line_no - 1)
     |> Stream.iterate(&(&1 - 1))
     |> Stream.map(&String.trim_leading(Map.get(lines, &1, "")))

@@ -34,19 +34,20 @@ defmodule ZebbraCredo.Check.SystemComment do
       []
     else
       issue_meta = IssueMeta.for(source_file, params)
+      lines = Helper.line_map(source_file)
 
       source_file
       |> unauthorized_lines()
       |> Enum.concat(bypass_lines(source_file, params))
       |> Enum.uniq()
-      |> Enum.reject(fn {line_no, _kind} -> Helper.system_comment_above?(source_file, line_no) end)
+      |> Enum.reject(fn {line_no, _kind} -> Helper.system_comment_above?(lines, line_no) end)
       |> Enum.map(&issue_for(issue_meta, &1))
     end
   end
 
   defp skip?(source_file, params) do
     not Params.get(params, :include_tests, __MODULE__) and
-      String.starts_with?(source_file.filename, "test/")
+      Regex.match?(~r{(^|/)test/}, source_file.filename)
   end
 
   defp unauthorized_lines(source_file) do

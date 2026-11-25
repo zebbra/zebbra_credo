@@ -78,6 +78,13 @@ defmodule ZebbraCredo.Check.SystemCommentTest do
     |> assert_issue()
   end
 
+  test "ignores test files in an umbrella app by default" do
+    @test_fixture
+    |> to_source_file("apps/x/test/foo_test.exs")
+    |> run_check(SystemComment)
+    |> refute_issues()
+  end
+
   describe "policy_bypasses" do
     test "flags a bypass without a comment" do
       """
