@@ -122,10 +122,18 @@ defmodule ZebbraCredo.Check.ForbiddenCallsTest do
   end
 
   test "an unknown except key stops the run, naming the valid keys" do
-    {_pid, ref} = spawn_monitor(fn -> preset_issues("defmodule X do\nend\n", "lib/my_app/foo.ex", except: [:clok]) end)
+    log =
+      ExUnit.CaptureLog.capture_log(fn ->
+        ExUnit.CaptureIO.capture_io(:stderr, fn ->
+          {_pid, ref} =
+            spawn_monitor(fn -> preset_issues("defmodule X do\nend\n", "lib/my_app/foo.ex", except: [:clok]) end)
 
-    assert_receive {:DOWN, ^ref, :process, _pid, {%ArgumentError{message: message}, _stacktrace}}
-    assert message =~ ~r/:clok.*:clock/s
+          assert_receive {:DOWN, ^ref, :process, _pid, {%ArgumentError{message: message}, _stacktrace}}
+          assert message =~ ~r/:clok.*:clock/s
+        end)
+      end)
+
+    assert log =~ "ArgumentError"
   end
 
   test "web: overrides the web namespace" do

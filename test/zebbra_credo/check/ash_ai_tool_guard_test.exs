@@ -201,9 +201,16 @@ defmodule ZebbraCredo.Check.AshAiToolGuardTest do
   end
 
   test "raises a config error without loop" do
-    {_pid, ref} = spawn_monitor(fn -> issues("defmodule X do\nend\n", "lib/my_app/x.ex", []) end)
+    log =
+      ExUnit.CaptureLog.capture_log(fn ->
+        ExUnit.CaptureIO.capture_io(:stderr, fn ->
+          {_pid, ref} = spawn_monitor(fn -> issues("defmodule X do\nend\n", "lib/my_app/x.ex", []) end)
 
-    assert_receive {:DOWN, ^ref, :process, _pid, {%ArgumentError{message: message}, _stacktrace}}
-    assert message =~ "loop:"
+          assert_receive {:DOWN, ^ref, :process, _pid, {%ArgumentError{message: message}, _stacktrace}}
+          assert message =~ "loop:"
+        end)
+      end)
+
+    assert log =~ "ArgumentError"
   end
 end
