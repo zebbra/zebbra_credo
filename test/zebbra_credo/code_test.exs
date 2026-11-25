@@ -38,4 +38,12 @@ defmodule ZebbraCredo.CodeTest do
     refute Helper.matches?("lib/a/b.ex", ["lib/*"])
     assert Helper.matches?("lib/b.ex", ["lib/*"])
   end
+
+  test "matches? matches at a path segment boundary" do
+    assert Helper.matches?("apps/x/lib/my_app/local_time.ex", ["lib/my_app/local_time.ex"])
+    assert Helper.matches?("/home/me/proj/lib/my_app/local_time.ex", ["lib/my_app/local_time.ex"])
+    assert Helper.matches?("/home/me/proj/lib/my_app/x/y.ex", ["lib/my_app/**"])
+    refute Helper.matches?("lib/my_app_extra/x.ex", ["lib/my_app/**"])
+    refute Helper.matches?("mylib/my_app/local_time.ex", ["lib/my_app/local_time.ex"])
+  end
 end

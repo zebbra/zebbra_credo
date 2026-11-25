@@ -57,8 +57,7 @@ defmodule ZebbraCredo.Check.ScopeNotActor do
         app -> App.new(app, web: web).web_lib
       end
 
-    web_lib != nil and not Regex.match?(~r{(^|/)test/}, filename) and
-      Regex.match?(~r{(^|/)#{Regex.escape(web_lib)}/}, filename)
+    web_lib != nil and not Code.matches?(filename, ["test/**"]) and Code.matches?(filename, [web_lib <> "/**"])
   end
 
   # Literals keep their line only when the parser wraps them in blocks.

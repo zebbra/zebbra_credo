@@ -47,7 +47,7 @@ defmodule ZebbraCredo.Check.SystemComment do
 
   defp skip?(source_file, params) do
     not Params.get(params, :include_tests, __MODULE__) and
-      Regex.match?(~r{(^|/)test/}, source_file.filename)
+      Helper.matches?(source_file.filename, ["test/**"])
   end
 
   defp unauthorized_lines(source_file) do

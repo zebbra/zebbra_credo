@@ -69,7 +69,11 @@ defmodule ZebbraCredo.Code do
     name == inspect(namespace) or String.starts_with?(name, inspect(namespace) <> ".")
   end
 
-  @doc "Whether the file path matches one of the globs (`*` within a segment, `**` across segments)."
+  @doc """
+  Whether the file path matches one of the globs (`*` within a segment, `**`
+  across segments). A glob matches from the start of the path or after any
+  `/`, so `lib/my_app/**` also matches `apps/x/lib/my_app/a.ex` and absolute paths.
+  """
   @spec matches?(String.t(), [String.t()]) :: boolean()
   def matches?(path, globs), do: Enum.any?(globs, &Regex.match?(glob_regex(&1), path))
 
@@ -78,7 +82,7 @@ defmodule ZebbraCredo.Code do
     |> Regex.escape()
     |> String.replace("\\*\\*", ".*")
     |> String.replace("\\*", "[^/]*")
-    |> then(&Regex.compile!("\\A" <> &1 <> "\\z"))
+    |> then(&Regex.compile!("(?:\\A|/)" <> &1 <> "\\z"))
   end
 
   @doc "Short name => full name parts, from every alias form in `ast`."

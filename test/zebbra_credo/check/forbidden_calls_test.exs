@@ -166,6 +166,8 @@ defmodule ZebbraCredo.Check.ForbiddenCallsTest do
       """
 
       source |> preset_issues("lib/my_app/local_time.ex") |> refute_issues()
+      source |> preset_issues("apps/my_app/lib/my_app/local_time.ex") |> refute_issues()
+      source |> preset_issues("/home/me/proj/lib/my_app/local_time.ex") |> refute_issues()
 
       source
       |> preset_issues("lib/my_app/harvest/plan.ex")
