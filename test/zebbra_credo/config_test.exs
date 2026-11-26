@@ -11,11 +11,12 @@ defmodule ZebbraCredo.ConfigTest do
     Check.ForbiddenCalls,
     Check.AssignInRender,
     Check.EnumKernel,
+    Check.EnumLookup,
     Check.NoAnonymousDslFunctions,
     Check.ScopeNotActor
   ]
 
-  test "house_checks enables the eight default checks" do
+  test "house_checks enables the nine default checks" do
     assert [app: MyApp] |> Config.house_checks() |> Keyword.keys() |> Enum.sort() == Enum.sort(@defaults)
   end
 
@@ -26,7 +27,7 @@ defmodule ZebbraCredo.ConfigTest do
       assert checks[check][:app] == MyApp
     end
 
-    for check <- [Check.SystemComment, Check.AshEntryPoints, Check.NoAnonymousDslFunctions] do
+    for check <- [Check.SystemComment, Check.AshEntryPoints, Check.EnumLookup, Check.NoAnonymousDslFunctions] do
       assert checks[check] == []
     end
 
@@ -46,7 +47,7 @@ defmodule ZebbraCredo.ConfigTest do
     checks = Config.house_checks(app: MyApp, except_checks: [Check.EnumKernel])
 
     refute Keyword.has_key?(checks, Check.EnumKernel)
-    assert length(checks) == 7
+    assert length(checks) == 8
   end
 
   test "checks adds params and turns on AshAiToolGuard" do
@@ -71,7 +72,7 @@ defmodule ZebbraCredo.ConfigTest do
     assert params[:app] == MyApp
     assert params[:repo_functions] == []
     assert hd(merged) == {Credo.Check.Readability.ModuleDoc, []}
-    assert length(merged) == 9
+    assert length(merged) == 10
   end
 
   test "merge keeps a project's false" do

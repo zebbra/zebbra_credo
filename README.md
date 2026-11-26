@@ -177,6 +177,16 @@ Params:
 * `kernel:` the kernel's file path, when it differs.
 * `allowed:` file globs that may `use Ash.Type.Enum` besides the kernel.
 
+### EnumLookup
+
+An enum is matched by its own functions. `Enum.find(Status.values(), &(to_string(&1) == value))` and its kin (`any?`, `member?`, `filter`, `find_value`, piped or not) hand-roll `Status.match/1`, and `Status.label(String.to_existing_atom(value))` converts a string that `label/1`, `description/1` and `meta/1` already take.
+
+Fix: `Status.match/1` or `Status.match?/1`, and pass the string as it is.
+
+Params:
+
+* `files:` files to check, as Credo's `included` and `excluded` globs (default `lib/`).
+
 ### NoAnonymousDslFunctions
 
 No `fn` or `&` as the argument of Ash DSL macros such as `change`, `run`, `prepare` and `validate`. Anonymous functions there cannot be named, reused, tested or found. Checked in modules that use `Ash.Resource` and in `actions`, `changes`, `preparations` and `validations` blocks.

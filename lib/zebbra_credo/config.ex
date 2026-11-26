@@ -12,6 +12,7 @@ defmodule ZebbraCredo.Config do
     Check.ForbiddenCalls,
     Check.AssignInRender,
     Check.EnumKernel,
+    Check.EnumLookup,
     Check.NoAnonymousDslFunctions,
     Check.ScopeNotActor
   ]
