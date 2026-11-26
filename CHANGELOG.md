@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/zebbra/zebbra_credo/compare/v1.1.0...v1.2.0) (2026-11-26)
+
+
+### Features
+
+* EnumLookup flags an enum's options built by hand ([dafceef](https://github.com/zebbra/zebbra_credo/commit/dafceefce8bd5ecd5da41d93519944ff6e7b5e14))
+
 ## [1.1.0](https://github.com/zebbra/zebbra_credo/compare/v1.0.0...v1.1.0) (2026-11-26)
 
 
