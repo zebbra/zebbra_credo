@@ -1,8 +1,9 @@
 defmodule ZebbraCredo.Check.EnumLookup do
   @moduledoc """
   Credo check: an enum is matched by its own functions. `Mod.values()` searched
-  by comparing `to_string` hand-rolls `Mod.match/1`, and a string turned into an
-  atom for `Mod.label/1`, `description/1` or `meta/1` repeats what they do.
+  by comparing `to_string` hand-rolls `Mod.match/1`, mapped into label tuples
+  hand-rolls `Mod.options/0`, and a string turned into an atom for
+  `Mod.label/1`, `description/1` or `meta/1` repeats what they do.
   """
   use Credo.Check,
     base_priority: :high,
@@ -20,6 +21,8 @@ defmodule ZebbraCredo.Check.EnumLookup do
           end
 
           Status.label(status)
+
+          Status.options()
       """,
       params: [
         files: "Files to check (Credo's `included`/`excluded` globs); defaults to `lib/`."
@@ -53,6 +56,15 @@ defmodule ZebbraCredo.Check.EnumLookup do
     {node, if(values?(values) and stringifies?(fun), do: [{meta[:line], match()} | acc], else: acc)}
   end
 
+  # Enum.map(Mod.values(), &{Mod.label(&1), &1}), plain or piped.
+  defp collect({{:., _, [{:__aliases__, _, [:Enum]}, :map]}, meta, [values, fun]} = node, acc) do
+    {node, if(values?(values) and labels?(fun), do: [{meta[:line], options()} | acc], else: acc)}
+  end
+
+  defp collect({:|>, meta, [values, {{:., _, [{:__aliases__, _, [:Enum]}, :map]}, _, [fun]}]} = node, acc) do
+    {node, if(values?(values) and labels?(fun), do: [{meta[:line], options()} | acc], else: acc)}
+  end
+
   # Mod.label(String.to_existing_atom(value)), plain or piped.
   defp collect({{:., _, [{:__aliases__, _, _}, text]}, meta, [arg | _]} = node, acc) when text in @texts do
     {node, if(to_atom?(arg), do: [{meta[:line], text(text)} | acc], else: acc)}
@@ -79,6 +91,20 @@ defmodule ZebbraCredo.Check.EnumLookup do
     found?
   end
 
+  # A two-element tuple holding a `label` call: an `{label, value}` option built by hand.
+  defp labels?(fun) do
+    {_ast, found?} =
+      Macro.prewalk(fun, false, fn
+        {left, right} = node, found -> {node, found or label?(left) or label?(right)}
+        node, found -> {node, found}
+      end)
+
+    found?
+  end
+
+  defp label?({{:., _, [{:__aliases__, _, _}, :label]}, _, [_]}), do: true
+  defp label?(_ast), do: false
+
   defp to_atom?({{:., _, [{:__aliases__, _, [:String]}, function]}, _, _args}), do: function in @to_atom
   defp to_atom?(_ast), do: false
 
@@ -86,6 +112,8 @@ defmodule ZebbraCredo.Check.EnumLookup do
   defp last_stage(ast), do: ast
 
   defp match, do: "Match an enum value with the enum's `match/1` or `match?/1`, not by comparing `to_string`."
+
+  defp options, do: "Build an enum's `{label, value}` options with its `options/0` or `options/1`, not by hand."
 
   defp text(function), do: "`#{function}/1` takes the string as it is: no atom conversion."
 end
