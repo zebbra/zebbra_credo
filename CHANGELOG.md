@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/zebbra/zebbra_credo/compare/v1.0.0...v1.1.0) (2026-11-26)
+
+
+### Features
+
+* add EnumLookup ([9bd8c50](https://github.com/zebbra/zebbra_credo/commit/9bd8c50490d7f6d8fd8453e7d6135f4248e58f28))
+
 ## 1.0.0 (2026-11-25)
 
 
