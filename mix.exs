@@ -1,7 +1,7 @@
 defmodule ZebbraCredo.MixProject do
   use Mix.Project
 
-  @version "0.0.0"
+  @version "1.0.0"
   @source_url "https://github.com/zebbra/zebbra_credo"
 
   def project do
